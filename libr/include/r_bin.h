@@ -230,6 +230,7 @@ typedef struct r_bin_object_t {
 	RList/*<??>*/ *libs;
 	RList/*<RBinReloc>*/ *relocs;
 	RList/*<??>*/ *strings;
+	dict *strings_db;
 	RList/*<RBinClass>*/ *classes;
 	RList/*<RBinDwarfRow>*/ *lines;
 	RList/*<??>*/ *mem;	//RBinMem maybe?
@@ -670,8 +671,8 @@ R_API int r_bin_file_delete_all(RBin *bin);
 R_API int r_bin_file_delete(RBin *bin, ut32 bin_fd);
 R_API RBinFile *r_bin_file_find_by_fd(RBin *bin, ut32 bin_fd);
 R_API RBinFile *r_bin_file_find_by_name(RBin *bin, const char *name);
-R_API int r_bin_file_set_cur_binfile(RBin *bin, RBinFile *bf);
-R_API int r_bin_file_set_cur_by_name(RBin *bin, const char *name);
+R_API bool r_bin_file_set_cur_binfile(RBin *bin, RBinFile *bf);
+R_API bool r_bin_file_set_cur_by_name(RBin *bin, const char *name);
 R_API RBinObject *r_bin_file_object_get_cur(RBinFile *binfile);
 R_API void r_bin_file_free(void /*RBinFile*/ *bf_);
 R_API RBinPlugin *r_bin_file_cur_plugin(RBinFile *binfile);

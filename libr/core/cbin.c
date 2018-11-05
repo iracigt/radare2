@@ -10,6 +10,9 @@
 #define VA_TRUE     1
 #define VA_NOREBASE 2
 
+
+#include <r_util/r_time.h>
+
 #define LOAD_BSS_MALLOC 0
 
 #define IS_MODE_SET(mode) ((mode) & R_MODE_SET)
@@ -168,7 +171,6 @@ static void _print_strings(RCore *r, RList *list, int mode, int va) {
 	RBinString *string;
 	RBinSection *section;
 	char *q;
-
 	bin->minstrlen = minstr;
 	bin->maxstrlen = maxstr;
 	if (IS_MODE_JSON (mode)) {
