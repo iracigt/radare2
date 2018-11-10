@@ -1110,7 +1110,7 @@ static int cmd_write(void *data, const char *input) {
 			break;
 		case '-': { // "wc-"
 			if (input[2]=='*') { // "wc-*"
-				r_io_cache_reset (core->io, true);
+				// r_io_cache_reset (core->io, true);
 				break;
 			}
 			ut64 from, to;

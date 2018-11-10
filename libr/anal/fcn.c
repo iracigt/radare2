@@ -892,6 +892,7 @@ static int fcn_recurse(RAnal *anal, RAnalFunction *fcn, ut64 addr, ut8 *buf, ut6
 	}
 
 	if (depth < 1) {
+		VERBOSE_ANAL eprintf ("Function too deep (depth = %d)! (fcn 0x%08"PFMT64x ")\n", depth, fcn->addr);
 		return R_ANAL_RET_ERROR; // MUST BE TOO DEEP
 	}
 
@@ -904,11 +905,13 @@ static int fcn_recurse(RAnal *anal, RAnalFunction *fcn, ut64 addr, ut8 *buf, ut6
 		if (addr != UT64_MAX && !anal->iob.io->va) {
 			eprintf ("Invalid address 0x%"PFMT64x ". Try with io.va=true\n", addr);
 		}
+		VERBOSE_ANAL eprintf ("Function too deep! (fcn 0x%08"PFMT64x ")\n", fcn->addr);
 		return R_ANAL_RET_ERROR; // MUST BE TOO DEEP
 	}
 
 	RAnalFunction *fcn_at_addr = r_anal_get_fcn_at (anal, addr, 0);
 	if (fcn_at_addr && fcn_at_addr != fcn) {
+		VERBOSE_ANAL eprintf ("Function not found! (fcn 0x%08"PFMT64x ")\n", fcn->addr);
 		return R_ANAL_RET_ERROR; // MUST BE NOT FOUND
 	}
 	bb = bbget (fcn, addr, anal->opt.jmpmid && x86);
@@ -917,6 +920,7 @@ static int fcn_recurse(RAnal *anal, RAnalFunction *fcn, ut64 addr, ut8 *buf, ut6
 		if (anal->opt.recont) {
 			return R_ANAL_RET_END;
 		}
+		eprintf ("Splitting basic block, rerun with anal.recont=true to continue analysis (fcn 0x%08"PFMT64x ")\n", fcn->addr);
 		return R_ANAL_RET_ERROR; // MUST BE NOT DUP
 	}
 

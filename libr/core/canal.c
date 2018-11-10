@@ -635,6 +635,28 @@ static void function_rename(RFlag *flags, RAnalFunction *fcn) {
 	}
 }
 
+static void core_anal_xrefs_relocs(RCore *core, RAnalFunction *fcn) {
+	RListIter *iter;
+	RBinReloc *reloc = NULL;
+	RList *relocs = NULL;
+	RBinObject *o = r_bin_cur_object (core->bin);
+
+	// Can't do this. Causes a use-after-free because it frees the relocs
+	// if (o && o->plugin && o->plugin->relocs && core->bin->cur) {
+	// 	relocs = o->plugin->relocs(core->bin->cur);
+	// }
+
+	if (!relocs) {
+		relocs = r_bin_get_relocs (core->bin);
+	}
+
+	r_list_foreach (relocs, iter, reloc) {
+		if (reloc && r_anal_fcn_is_in_offset (fcn, reloc->vaddr) && !reloc->import && reloc->symbol) {
+			(void) r_anal_xrefs_set (core->anal, reloc->vaddr, reloc->symbol->vaddr + reloc->addend, R_ANAL_REF_TYPE_NULL);
+		}
+	}
+}
+
 static int core_anal_fcn(RCore *core, ut64 at, ut64 from, int reftype, int depth) {
 	if (depth < 0) {
 //		printf ("Too deep for 0x%08"PFMT64x"\n", at);
@@ -829,6 +851,9 @@ static int core_anal_fcn(RCore *core, ut64 at, ut64 from, int reftype, int depth
 		free (next);
 	}
 	r_anal_hint_free (hint);
+
+	core_anal_xrefs_relocs (core, fcn);
+
 	return true;
 
 error:
@@ -4142,7 +4167,7 @@ R_API void r_core_anal_esil(RCore *core, const char *str, const char *target) {
 				r_flag_set_next (core->flags, sdb_fmt ("syscall.%s", si->name), cur, 1);
 			} else {
 				//todo were doing less filtering up top because we cant match against 80 on all platforms
-				// might get too many of this path now.. 
+				// might get too many of this path now..
 			//	eprintf ("0x%08"PFMT64x" SYSCALL %d\n", cur, snv);
 				r_flag_set_next (core->flags, sdb_fmt ("syscall.%d", snv), cur, 1);
 			}

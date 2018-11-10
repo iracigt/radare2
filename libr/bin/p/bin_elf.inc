@@ -749,8 +749,9 @@ static RBinReloc *reloc_convert(struct Elf_(r_bin_elf_obj_t) *bin, RBinElfReloc 
 	#undef SET
 	#undef ADD
 
-	free (r);
-	return 0;
+	// free (r);
+	// return 0;
+	return r;
 }
 
 static RList* relocs(RBinFile *bf) {
@@ -1122,14 +1123,13 @@ static RList* patch_relocs(RBin *b) {
 		if (!(ptr = reloc_convert (bin, &relcs[i], n_vaddr))) {
 			continue;
 		}
-
-		if (sym_addr) {
-			ptr->vaddr = sym_addr;
-		} else {
-			ptr->vaddr = vaddr;
-			ht_insert_intu64 (relocs_by_sym, relcs[i].sym, vaddr);
-			vaddr += cdsz;
-		}
+		// if (sym_addr) {
+		// 	ptr->vaddr = sym_addr;
+		// } else {
+		// 	ptr->vaddr = vaddr;
+		// 	ht_insert_intu64 (relocs_by_sym, relcs[i].sym, vaddr);
+		// 	vaddr += cdsz;
+		// }
 		r_list_append (ret, ptr);
 	}
 	ht_free (relocs_by_sym);
