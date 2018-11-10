@@ -731,6 +731,18 @@ static RBinReloc *reloc_convert(struct Elf_(r_bin_elf_obj_t) *bin, RBinElfReloc 
 		 ////eprintf("TODO(eddyb): uninmplemented ELF/ARM reloc type %i\n", rel->type);
 		}
 		break;
+
+	case EM_SPARC:
+	case EM_SPARC32PLUS: switch (rel->type) {
+		case R_SPARC_NONE:	break; // malloc then free. meh. then again, there's no real world use for _NONE.
+		case R_SPARC_32:	ADD(32, 0);
+		case R_SPARC_WDISP22:	ADD(32, P);
+		case R_SPARC_WDISP30:	ADD(32, P);
+		case R_SPARC_HI22:	ADD(HI22, 0); /* High 22 bit */
+		case R_SPARC_LO10:	ADD(LO10, 0); /* Truncated 10 bit */
+		// default: 		eprintf ("TODO: uninmplemented ELF/SPARC reloc type %i\n", rel->type);
+		}
+		break;
 	default: break;
 	}
 
@@ -922,6 +934,91 @@ static void _patch_reloc (ut16 e_machine, RIOBind *iob, RBinElfReloc *rel, ut64 
 		}
 		break;
 	}
+	// case EM_SPARC32PLUS: // I think this is correct
+	case EM_SPARC: {
+		int word = 0;
+		switch (rel->type) {
+
+		case R_SPARC_NONE:
+			word = 0;
+			break;
+		case R_SPARC_8:
+			word = 1;
+			val = S + A;
+			break;
+		case R_SPARC_16:
+			word = 2;
+			val = S + A;
+			break;
+		case R_SPARC_32:
+			word = 4;
+			val = S + A;
+			break;
+		case R_SPARC_DISP8:
+			word = 1;
+			val = S + A - P;
+			break;
+		case R_SPARC_DISP16:
+			word = 2;
+			val = S + A - P;
+			break;
+		case R_SPARC_DISP32:
+			word = 4;
+			val = S + A - P;
+			break;
+		case R_SPARC_WDISP30:
+			word = 4;
+			val = (S + A - P) >> 2;
+			break;
+		case R_SPARC_WDISP22:
+			word = 4;
+			val = (S + A - P) >> 2;
+			break;
+		case R_SPARC_HI22:
+			word = 4;
+			val = (S + A) >> 10;
+			break;
+		// ...
+		case R_SPARC_LO10:
+			word = 4;
+			val = S + A;
+			break;
+		default:
+			eprintf ("SPARC relocation %d not handled at this time\n", rel->type);
+			break;
+		}
+		switch (word) {
+		case 0:
+			break;
+		case 1:
+			iob->read_at (iob->io, rel->rva, buf, 1);
+			buf[0] = buf[0] | val;
+			iob->write_at (iob->io, rel->rva, buf, 1);
+			break;
+		case 2:
+			iob->read_at (iob->io, rel->rva, buf, 2);
+			val = r_read_be16 (buf) | val;
+			r_write_be16 (buf, val);
+			iob->write_at (iob->io, rel->rva, buf, 2);
+			break;
+		case 4:
+			iob->read_at (iob->io, rel->rva, buf, 4);
+			val = r_read_be32 (buf) | val;
+			r_write_be32 (buf, val);
+			iob->write_at (iob->io, rel->rva, buf, 4);
+			break;
+		case 8:
+			iob->read_at (iob->io, rel->rva, buf, 8);
+			val = r_read_be64 (buf) | val;
+			r_write_be64 (buf, val);
+			iob->write_at (iob->io, rel->rva, buf, 8);
+			break;
+		}
+		break;
+	}
+
+	default:
+		eprintf ("TODO: relocation %d for machine %u not handled!\n", rel->type, e_machine);
 	}
 }
 

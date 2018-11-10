@@ -1213,6 +1213,8 @@ static const char *bin_reloc_type_name(RBinReloc *reloc) {
 		CASE(16);
 		CASE(32);
 		CASE(64);
+		CASE(HI22);
+		CASE(LO10);
 	}
 	return "UNKNOWN";
 #undef CASE
@@ -1225,6 +1227,8 @@ static ut8 bin_reloc_size(RBinReloc *reloc) {
 		CASE(16);
 		CASE(32);
 		CASE(64);
+		case R_BIN_RELOC_HI22: return 3;
+		case R_BIN_RELOC_LO10: return 2;
 	}
 	return 0;
 #undef CASE
